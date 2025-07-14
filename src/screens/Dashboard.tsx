@@ -8,7 +8,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { fetchInitialTasks, toggleTaskStatus, deleteTask } from './../store/features/taskSlice';
+import { fetchInitialTasks } from './../store/features/taskSlice';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import Icon from 'react-native-vector-icons/Ionicons';
 import TaskCard from '../components/TaskCard';
@@ -16,21 +16,25 @@ import EmptyState from '../components/EmptyState';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/types';
 
+// Define colors for task cards
 const TaskCardColors = ['#ffe878', '#ff99f7', '#92f1ff', '#a0ffa0'];
 
 const DashboardScreen = () => {
   const dispatch = useAppDispatch();
-const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { tasks, loading } = useAppSelector(state => state.task);
 
+  // Filter and sorting state
   const [filter, setFilter] = useState<'all' | 'completed' | 'incomplete'>('all');
   const [sortBy, setSortBy] = useState<'dueDate' | 'priority'>('dueDate');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
+  // Fetch initial tasks when component mounts
   useEffect(() => {
     dispatch(fetchInitialTasks());
   }, []);
 
+  // Filter tasks based on status
   const filteredTasks = useMemo(() => {
     switch (filter) {
       case 'completed':
@@ -42,6 +46,7 @@ const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>(
     }
   }, [tasks, filter]);
 
+  // Sort tasks based on due date or priority
   const sortedTasks = useMemo(() => {
     const priorityValue = (p: string) => (p === 'High' ? 3 : p === 'Medium' ? 2 : 1);
 
@@ -62,6 +67,7 @@ const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>(
     });
   }, [filteredTasks, sortBy, sortOrder]);
 
+  // Render individual task item
   const renderItem = ({ item, index }: any) => (
     <TaskCard
       task={item}
@@ -71,17 +77,19 @@ const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>(
     />
   );
 
+  // Count task by filter
   const taskCount = {
     all: tasks.length,
     completed: tasks.filter(t => t.completed).length,
     incomplete: tasks.filter(t => !t.completed).length,
   };
 
+  // Show loader while fetching tasks
   if (loading) return <ActivityIndicator size="large" style={{ flex: 1 }} />;
 
   return (
     <View style={styles.container}>
-      {/* Filter Buttons */}
+      {/* Filter buttons */}
       <View style={styles.filterRow}>
         {(['all', 'completed', 'incomplete'] as const).map(type => (
           <TouchableOpacity
@@ -109,10 +117,12 @@ const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>(
         ))}
       </View>
 
-      {/* Sort Buttons */}
+      {/* Sort buttons */}
       {sortedTasks.length > 0 && (
         <View style={styles.sortRow}>
           <Text>Sort By: </Text>
+
+          {/* Sort by due date */}
           <TouchableOpacity
             onPress={() => {
               setSortBy('dueDate');
@@ -131,6 +141,7 @@ const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>(
             )}
           </TouchableOpacity>
 
+          {/* Sort by priority */}
           <TouchableOpacity
             onPress={() => {
               setSortBy('priority');
@@ -151,7 +162,7 @@ const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>(
         </View>
       )}
 
-      {/* Task List or Empty State */}
+      {/* Task List / Empty State */}
       {sortedTasks.length === 0 ? (
         <EmptyState title='No tasks found' message="Try changing the filter or add new tasks." />
       ) : (
@@ -162,7 +173,7 @@ const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>(
         />
       )}
 
-      {/* FAB */}
+      {/* FAB to add new task */}
       <TouchableOpacity
         onPress={() => navigation.navigate('TaskForm')}
         style={styles.fab}
@@ -172,9 +183,12 @@ const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>(
     </View>
   );
 };
-
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, paddingBottom: 0 },
+  container: {
+    flex: 1,
+    padding: 16,
+    paddingBottom: 0,
+  },
   filterRow: {
     flexDirection: 'row',
     justifyContent: 'center',
@@ -201,7 +215,7 @@ const styles = StyleSheet.create({
     color: '#333',
   },
   activeFilterButtonText: {
-    color: 'white',
+    color: '#fff',
     fontWeight: 'bold',
   },
   badge: {
@@ -215,10 +229,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   badgeText: {
-    color: 'white',
+    color: '#fff',
     fontSize: 12,
     fontWeight: 'bold',
   },
+
+  // Sort Styles
   sortRow: {
     flexDirection: 'row',
     justifyContent: 'center',
@@ -242,6 +258,8 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#333',
   },
+
+  // Fab Action Button
   fab: {
     position: 'absolute',
     right: 18,

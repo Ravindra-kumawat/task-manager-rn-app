@@ -10,9 +10,11 @@ import TaskDetailsScreen from '../screens/TaskDetails';
 import VideoListScreen from '../screens/Video';
 import { RootStackParamList, RootTabParamList } from './types';
 
+// Create native stack and tab navigators
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<RootTabParamList>();
 
+// Stack navigator for task-related screens
 const DashboardStack = () => (
   <Stack.Navigator>
     <Stack.Screen name="Dashboard" component={DashboardScreen} options={{ title: 'Dashboard', headerTitleAlign: 'center' }} />
@@ -21,12 +23,12 @@ const DashboardStack = () => (
   </Stack.Navigator>
 );
 
+// Main app navigator with bottom tab bar
 const AppNavigator = () => {
   return (
     <NavigationContainer>
       <Tab.Navigator
         screenOptions={({ route }) => ({
-
           headerTitleAlign: 'center',
           tabBarIcon: ({ focused, color, size }) => {
             let iconName: string;
@@ -51,6 +53,7 @@ const AppNavigator = () => {
           tabBarInactiveTintColor: 'gray',
         })}
       >
+        {/* Task Stack as "Tasks" tab */}
         <Tab.Screen
           name="Tasks"
           component={DashboardStack}
@@ -59,6 +62,8 @@ const AppNavigator = () => {
             tabBarLabel: 'Tasks',
           }}
         />
+
+        {/* Direct video screen as "Videos" tab */}
         <Tab.Screen
           name="Videos"
           component={VideoListScreen}

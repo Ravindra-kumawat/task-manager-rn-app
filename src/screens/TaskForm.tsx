@@ -26,10 +26,12 @@ const TaskFormScreen: React.FC<Props> = ({ route, navigation }) => {
   const { taskId } = route.params || {};
   const editing = !!taskId;
 
+  // Find the task if editing
   const existingTask = useAppSelector(state =>
     state.task.tasks.find(t => t.id === taskId)
   );
 
+  // Form field state
   const [title, setTitle] = useState(existingTask?.title || '');
   const [titleError, setTitleError] = useState('');
   const [description, setDescription] = useState(existingTask?.description || '');
@@ -42,12 +44,14 @@ const TaskFormScreen: React.FC<Props> = ({ route, navigation }) => {
     existingTask?.priority || 'Low'
   );
 
+  // Set screen title based on mode
   useLayoutEffect(() => {
     navigation.setOptions({
       title: editing ? 'Edit Task' : 'Add Task',
     });
   }, [navigation, editing]);
 
+  // Validation logic
   const validate = () => {
     let valid = true;
     if (!title.trim()) {
@@ -61,6 +65,7 @@ const TaskFormScreen: React.FC<Props> = ({ route, navigation }) => {
     return valid;
   };
 
+  // Save or update task
   const handleSave = () => {
     if (!validate()) return;
 
@@ -76,11 +81,13 @@ const TaskFormScreen: React.FC<Props> = ({ route, navigation }) => {
     editing ? dispatch(editTask(payload)) : dispatch(addTask(payload));
     navigation.goBack();
 
+    // Show success message
     Platform.OS === 'android'
       ? ToastAndroid.show(`${editing ? 'Task updated' : 'New task added'} successfully`, ToastAndroid.SHORT)
       : Alert.alert('Success', `${editing ? 'Task updated' : 'New task added'} successfully`);
   };
 
+  // Handle date picker selection
   const handleDateChange = (_: any, selectedDate?: Date) => {
     if (selectedDate) setDueDate(selectedDate);
     setShowDatePicker(false);
@@ -96,7 +103,7 @@ const TaskFormScreen: React.FC<Props> = ({ route, navigation }) => {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        {/* Title */}
+        {/* Title Field */}
         <Text style={styles.label}>
           Title <Text style={styles.required}>*</Text>
         </Text>
@@ -115,7 +122,7 @@ const TaskFormScreen: React.FC<Props> = ({ route, navigation }) => {
         />
         {titleError && <Text style={styles.errorText}>{titleError}</Text>}
 
-        {/* Description */}
+        {/* Description Field */}
         <Text style={styles.label}>Description</Text>
         <TextInput
           value={description}
@@ -127,7 +134,7 @@ const TaskFormScreen: React.FC<Props> = ({ route, navigation }) => {
           style={[styles.input, styles.textArea]}
         />
 
-        {/* Due Date */}
+        {/* Due Date Field */}
         <Text style={styles.label}>
           Due Date <Text style={styles.required}>*</Text>
         </Text>
@@ -148,7 +155,7 @@ const TaskFormScreen: React.FC<Props> = ({ route, navigation }) => {
           />
         )}
 
-        {/* Priority */}
+        {/* Priority Radio Group */}
         <Text style={styles.label}>
           Priority <Text style={styles.required}>*</Text>
         </Text>

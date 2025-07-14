@@ -22,10 +22,24 @@ const TaskDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
   const { taskId } = route.params;
   const dispatch = useAppDispatch();
 
+  // Find the task from Redux store using the ID from route params
   const task = useAppSelector((state: RootState) =>
     state.task.tasks.find(t => t.id === taskId)
   );
 
+  // Return to Previous Screen When task undefined
+  if (!task) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.title}>Task not found</Text>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.goBackBtn}>
+          <Text style={styles.goBackText}>Go Back</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  // Confirm deletion and dispatch deleteTask action
   const handleDelete = () => {
     Alert.alert(
       '🗑️ Confirm Delete',
@@ -38,7 +52,7 @@ const TaskDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
           onPress: () => {
             dispatch(deleteTask(task.id));
 
-            // Show success feedback
+            // Show feedback after deletion
             if (Platform.OS === 'android') {
               ToastAndroid.show('Task deleted successfully', ToastAndroid.LONG);
             } else {
@@ -52,19 +66,22 @@ const TaskDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
     );
   };
 
+  // Toggle task status (completed/incomplete)
   const handleToggleStatus = () => {
     dispatch(toggleTaskStatus(task.id));
     if (Platform.OS === 'android') {
-      ToastAndroid.show('Task status update successfully', ToastAndroid.LONG);
+      ToastAndroid.show('Task status updated successfully', ToastAndroid.LONG);
     } else {
-      Alert.alert('Status Update', 'Task status update successfully');
+      Alert.alert('Status Update', 'Task status updated successfully');
     }
   };
 
   return (
     <View style={styles.container}>
+      {/* Task Title */}
       <Text style={styles.title}>{capitalizeFirstChar(task.title)}</Text>
 
+      {/* Task Description */}
       <View style={styles.metaRow}>
         <Icon name="document-text-outline" size={18} color="#555" />
         <Text style={styles.description}>
@@ -72,16 +89,19 @@ const TaskDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
         </Text>
       </View>
 
+      {/* Due Date */}
       <View style={styles.metaRow}>
         <Icon name="calendar-outline" size={18} color="#555" />
         <Text style={styles.metaText}>{formatDueDate(task.dueDate)}</Text>
       </View>
 
+      {/* Priority */}
       <View style={styles.metaRow}>
         <Icon name="funnel-outline" size={18} color="#555" />
         <Text style={styles.metaText}>Priority: {task.priority}</Text>
       </View>
 
+      {/* Status */}
       <View style={styles.metaRow}>
         <Icon
           name={task.completed ? 'checkmark-circle' : 'close-circle'}
@@ -93,7 +113,9 @@ const TaskDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
         </Text>
       </View>
 
+      {/* Action Buttons */}
       <View style={styles.actions}>
+        {/* Toggle Status */}
         <TouchableOpacity
           style={[styles.button, styles.statusButton]}
           onPress={handleToggleStatus}
@@ -108,6 +130,7 @@ const TaskDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
           </Text>
         </TouchableOpacity>
 
+        {/* Edit Task */}
         <TouchableOpacity
           style={[styles.button, styles.editButton]}
           onPress={() => navigation.navigate('TaskForm', { taskId: task.id })}
@@ -116,6 +139,7 @@ const TaskDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
           <Text style={styles.buttonText}>Edit Task</Text>
         </TouchableOpacity>
 
+        {/* Delete Task */}
         <TouchableOpacity
           style={[styles.button, styles.deleteButton]}
           onPress={handleDelete}
@@ -180,5 +204,16 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: 'bold',
     marginLeft: 8,
+  },
+   goBackBtn: {
+    marginTop: 16,
+    alignSelf: 'center',
+    padding: 12,
+    backgroundColor: '#007bff',
+    borderRadius: 8,
+  },
+  goBackText: {
+    color: '#fff',
+    fontWeight: 'bold',
   },
 });

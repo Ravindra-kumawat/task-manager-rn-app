@@ -7,7 +7,7 @@ import {
   StyleSheet,
   ActivityIndicator,
 } from 'react-native';
-import Orientation from 'react-native-orientation-locker';
+import Orientation from 'react-native-orientation-locker'; // For handling fullscreen video rotation
 import Icon from 'react-native-vector-icons/Ionicons';
 import Video from 'react-native-video';
 
@@ -40,16 +40,19 @@ const VideoCard: React.FC<VideoCardProps> = ({
   onStop,
   shouldPause,
 }) => {
-  const [isBuffering, setIsBuffering] = useState(true);
+  const [isBuffering, setIsBuffering] = useState(true); // Manage buffering state
 
+  // Lock screen to landscape when video goes fullscreen
   const handleFullscreenEnter = useCallback(() => {
     Orientation.lockToLandscape();
   }, []);
 
+  // Revert to portrait mode when fullscreen exits
   const handleFullscreenExit = useCallback(() => {
     Orientation.lockToPortrait();
   }, []);
 
+  // Memoized icon and text based on download status
   const isFailed = status === 'failed';
   const isDownloading = status === 'downloading';
   const isCompleted = status === 'completed';
@@ -75,6 +78,7 @@ const VideoCard: React.FC<VideoCardProps> = ({
 
   return (
     <View style={styles.card}>
+      {/* Play video or show thumbnail */}
       <TouchableOpacity onPress={isPlaying ? onStop : onPlay} activeOpacity={0.9}>
         {isPlaying ? (
           <>
@@ -92,6 +96,7 @@ const VideoCard: React.FC<VideoCardProps> = ({
               onFullscreenPlayerWillPresent={handleFullscreenEnter}
               onFullscreenPlayerWillDismiss={handleFullscreenExit}
             />
+            {/* Buffering Loader */}
             {isBuffering && (
               <ActivityIndicator
                 size="large"
@@ -102,6 +107,7 @@ const VideoCard: React.FC<VideoCardProps> = ({
           </>
         ) : (
           <>
+            {/* Thumbnail with Play Button Overlay */}
             <Image source={{ uri: thumbnailUrl }} style={styles.thumbnail} />
             <View style={styles.playIcon}>
               <Icon name="play-circle" size={48} color="#fff" />
@@ -116,6 +122,8 @@ const VideoCard: React.FC<VideoCardProps> = ({
         poster={thumbnailUrl}
         paused={true}
       /> */}
+
+       {/* Video Info and Download Button */}
       <View style={styles.infoContainer}>
         <Text style={styles.author}>{author}</Text>
         <Text style={styles.title} numberOfLines={2}>{title}</Text>
@@ -133,6 +141,8 @@ const VideoCard: React.FC<VideoCardProps> = ({
     </View>
   );
 };
+
+export default VideoCard;
 
 const styles = StyleSheet.create({
   card: {
@@ -191,5 +201,3 @@ const styles = StyleSheet.create({
     color: '#007bff',
   },
 });
-
-export default VideoCard;

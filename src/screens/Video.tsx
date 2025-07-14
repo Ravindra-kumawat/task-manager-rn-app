@@ -10,17 +10,21 @@ import NetInfo from '@react-native-community/netinfo';
 
 const VideoListScreen = () => {
   const dispatch = useAppDispatch();
+
+  // Select video-related states from Redux store
   const { videos = [], loading } = useAppSelector((state: RootState) => state.videos);
   const downloaded = useAppSelector((state) => state.videos.downloadedVideoIds || []);
   const progressMap = useAppSelector((state) => state.videos.downloadProgress || {});
 
-  const [playingVideoId, setPlayingVideoId] = useState<string | null>(null);
-  const [shouldPause, setShouldPause] = useState<boolean>(false);
+  const [playingVideoId, setPlayingVideoId] = useState<string | null>(null); // Currently playing video
+  const [shouldPause, setShouldPause] = useState<boolean>(false); // Pause video when screen is unfocused
 
+  // Fetch videos from server on mount
   useEffect(() => {
     dispatch(fetchVideos());
   }, [dispatch]);
 
+  // Pause video playback when user leaves the screen
   useFocusEffect(
     useCallback(() => {
       setShouldPause(false);
@@ -28,8 +32,11 @@ const VideoListScreen = () => {
     }, [])
   );
 
+  // Download video and show success/error messages
   const handleDownload = useCallback(async (video: any) => {
     const netState = await NetInfo.fetch();
+
+    // Check network before download
     if (!netState.isConnected) {
       const msg = 'No internet connection. Please check your network.';
       Platform.OS === 'android'
@@ -37,24 +44,27 @@ const VideoListScreen = () => {
         : Alert.alert('Network Error', msg);
       return;
     }
+
     try {
+      // Dispatch Redux async thunk to download video
       await dispatch(downloadVideo(video)).unwrap();
       const msg = 'Video downloaded successfully!';
       Platform.OS === 'android'
         ? ToastAndroid.show(msg, ToastAndroid.SHORT)
         : Alert.alert('Download Complete', msg);
     } catch (error: any) {
+      // Handle network or server error
       const errorMessage = 'Network Error, Please check your internet connection.';
-
       Platform.OS === 'android'
         ? ToastAndroid.show(`Download failed: ${errorMessage}`, ToastAndroid.LONG)
         : Alert.alert('Download Failed', errorMessage);
     }
   }, [dispatch]);
 
+  // Render each video card in the list
   const renderItem = useCallback(({ item }: { item: any }) => {
-    const isDownloaded = downloaded?.includes?.(item.id);
-    const videoUrl = isDownloaded ? getLocalVideoPath(item.id) : item?.videoUrl;
+    const isDownloaded = downloaded?.includes?.(item.id); // Check if video is already downloaded
+    const videoUrl = isDownloaded ? getLocalVideoPath(item.id) : item?.videoUrl; // Local path or online URL
     const progress = progressMap?.[item.id]?.progress || 0;
     const status = progressMap?.[item.id]?.status;
 
@@ -76,6 +86,7 @@ const VideoListScreen = () => {
     );
   }, [downloaded, progressMap, playingVideoId, handleDownload, shouldPause]);
 
+  // Show loader while videos are loading
   if (loading) {
     return (
       <View style={styles.loader}>
@@ -84,6 +95,7 @@ const VideoListScreen = () => {
     );
   }
 
+  // Render the video list
   return (
     <SafeAreaView style={styles.container}>
       <FlatList
