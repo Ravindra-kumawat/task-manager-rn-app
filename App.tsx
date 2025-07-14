@@ -5,17 +5,35 @@
  * @format
  */
 
-import { NewAppScreen } from '@react-native/new-app-screen';
+import { useEffect, useState } from 'react';
 import { StatusBar, StyleSheet, useColorScheme, View } from 'react-native';
+import { Provider as StoreProvider } from 'react-redux';
+import { PersistGate } from 'redux-persist/integration/react';
+import { persistor, store } from './src/store/store';
+import AppNavigator from './src/navigation/AppNavigator';
+import NetInfo from '@react-native-community/netinfo';
+import OfflineModal from './src/components/OfflineModal';
 
 function App() {
-  const isDarkMode = useColorScheme() === 'dark';
+  const [showModal, setShowModal] = useState(false);
+
+  useEffect(() => {
+    const unsubscribe = NetInfo.addEventListener(state => {
+      setShowModal(!state.isConnected);
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   return (
-    <View style={styles.container}>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <NewAppScreen templateFileName="App.tsx" />
-    </View>
+    <StoreProvider store={store}>
+      <PersistGate loading={null} persistor={persistor}>
+        <View style={styles.container}>
+          <AppNavigator />
+          <OfflineModal visible={showModal} onClose={() => setShowModal(false)} />
+        </View>
+      </PersistGate>
+    </StoreProvider>
   );
 }
 
